@@ -383,6 +383,7 @@ def get_file_name(box_title, title2, initial_dir):
     import os
     import PySimpleGUI as sg
     from pathlib import Path
+    from loguru import logger
 
     logger.debug('in get_file_name')
     # "Select Sincere address export file 'all-parent-campaign-requests-yyyy-mm-dd.csv'"
