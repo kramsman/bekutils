@@ -120,6 +120,7 @@ def is_number(s: str) -> bool:
     expects param to be a string to trap all types of data.   """
 
     import numpy as np
+    from loguru import logger
 
     logger.info("in is_number")
 
