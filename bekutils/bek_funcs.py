@@ -88,6 +88,7 @@ def exit_yes_no(msg, title=None, display_exiting=False):
     """ makes this choice to continue one line"""
 
     import pymsgbox
+    from loguru import logger
 
     if not title:
         title = "Exit?"
@@ -103,6 +104,7 @@ def exit_yes(msg: str, title: str = None, *, errmsg: str = None, raise_err: bool
     """ exits program after giving user a popup window and raising an error. """
 
     import pymsgbox
+    from loguru import logger
 
     msg = msg + "\n\n\nExiting."
     if not errmsg:
@@ -147,6 +149,9 @@ def clean_field(fld, case_convert='lower'):
     1/28/23 added optional parameter convert_case defaulting to lower, as was done before, but allowing 'upper' or
     'keep'.
     """
+
+    from loguru import logger
+
     return_fld = str(fld).strip().replace(" ", "").replace("'", "").replace(".", "").replace("-", "")
     if case_convert == 'lower':
         return_fld = return_fld.lower()
@@ -161,6 +166,9 @@ def clean_field(fld, case_convert='lower'):
 
 def autosize_xls_cols(ws):
     """ BEKs routine that works on the wks rather than df.  Datetime format set to width of 10. """
+
+    from loguru import logger
+
     dims = {}
     for row in ws.rows:
         for cell in row:
@@ -177,6 +185,9 @@ def autosize_xls_cols(ws):
 
 def bad_file_exit(file, msg=None, raise_err=False):
     """ checks for file existence and exits if not found"""
+
+    from loguru import logger
+
     if msg is None:
         msg = f"File:\n\n'{file}'\n\ndoes not exist."
     if not file.expanduser().exists():
@@ -186,6 +197,9 @@ def bad_file_exit(file, msg=None, raise_err=False):
 
 def bad_path_exit(path, msg=None, raise_err=False):
     """ checks for directory existence and exits if not found"""
+
+    from loguru import logger
+
     if msg is None:
         msg = f"Directory:\n\n'{path}'\n\ndoes not exist."
     # if not Path(os.path.expanduser(path)).exists():  # need expanduser for ~; only os works (not pathlib)
@@ -202,6 +216,7 @@ def bad_path_create(path, msg=None):
 
     import os
     import pymsgbox
+    from loguru import logger
 
     if msg is None:
         msg = ("Directory:\n\n" + str(path) + "\n\ndoes not exist.  Creating." +
@@ -216,6 +231,7 @@ def calling_func(level=0):
     """ returns the various levels of calling function.  0 is current, 1 is caller of current, etc """
 
     import inspect
+    from loguru import logger
 
     try:
         func = f"'{inspect.stack()[level][3]}', line #: {inspect.stack()[level][2]}"
@@ -223,6 +239,34 @@ def calling_func(level=0):
         logger.exception(e)
         func = f"** error ** inspect level too deep: {str(level)} called from {inspect.stack()[level][3]}"
     return func
+
+
+def read_file_to_df(file_with_path, **param_dict):
+    """reads either xlsx or csv into a dataframe using parms passed in dictionary. Non-applicable parms
+    are skipped."""
+
+    import inspect
+    from pathlib import PurePath
+    import pandas as pd
+    from loguru import logger
+
+    logger.info(f"reading file to dataframe '{file_with_path.stem}'")
+
+    if PurePath(file_with_path).suffix.lower() == '.xlsx':
+        filtered_dict = {k: v for k, v in param_dict.items()
+                         if k in [p.name for p in inspect.signature(pd.read_excel).parameters.values()]}
+        df_temp = pd.read_excel(file_with_path, **filtered_dict)
+    elif file_with_path.suffix.lower() == '.csv':
+        filtered_dict = {k: v for k, v in param_dict.items()
+                         if k in [p.name for p in inspect.signature(pd.read_csv).parameters.values()]}
+        df_temp = pd.read_csv(file_with_path, **filtered_dict)
+    else:
+        df_temp = None
+        logger.debug('here')
+        exit_yes((f"Bad file type on input - not xlsx or csv."
+                  f"\n\nFile: '{file_with_path}'"
+                  ))
+    return df_temp
 
 
 
@@ -239,6 +283,7 @@ def find_header_row_in_file(file_with_path, header_string, header_col, sheet_nam
 
     from openpyxl.utils.cell import coordinate_from_string
     from openpyxl.utils.cell import column_index_from_string
+    from bekutils import read_file_to_df
 
     if sheet_name is None:
         sheet_name = 0
@@ -350,8 +395,10 @@ def get_dir_name(box_title, title2, initial_dir):
     :type title2:
     """
 
+    import os
     import PySimpleGUI as sg
     from pathlib import Path
+    from loguru import logger
 
     logger.debug('in get_dir_name')
 

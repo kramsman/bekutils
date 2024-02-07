@@ -13,6 +13,7 @@ from .bek_funcs import bad_path_exit
 from .bek_funcs import bad_path_create
 from .bek_funcs import calling_func
 from .bek_funcs import find_header_row_in_file
+from .bek_funcs import read_file_to_df
 from .bek_funcs import check_ws_headers
 from .bek_funcs import text_box
 from .bek_funcs import get_dir_name
