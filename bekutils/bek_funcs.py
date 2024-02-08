@@ -48,12 +48,16 @@ def exe_path():
     import sys
     from pathlib import Path
 
+    import __main__
+    import os
+
+
     # determine if application is running as a script file or frozen exe
     if getattr(sys, 'frozen', False):
         exe_path = Path(sys.executable).parents[0]
     elif __file__:
-        # root_path = os.path.dirname(__file__)
-        exe_path = Path(__file__).parents[0]
+        # exe_path = Path(__file__).parents[0]
+        exe_path = Path(__main__.__file__).parents[0]
     else:
         exe_path = None
 
@@ -492,6 +496,9 @@ def convert_bool(bool_val):
 
 
 if __name__ == '__main__':
+
+    yyy = exe_path()
+
     print(f"{clean_field('a-1-t')}")
 
     import numpy as np
