@@ -42,8 +42,25 @@ Taken from ROVCleaver
 
 log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
 
+def exe_path():
+    """ return the path of location where exe is running """
 
-def setup_loguru(log_level_std, log_level_log, log_path=None, log_mode='w'):
+    import sys
+    from pathlib import Path
+
+    # determine if application is running as a script file or frozen exe
+    if getattr(sys, 'frozen', False):
+        exe_path = Path(sys.executable).parents[0]
+    elif __file__:
+        # root_path = os.path.dirname(__file__)
+        exe_path = Path(__file__).parents[0]
+    else:
+        exe_path = None
+
+    return exe_path
+
+
+def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_mode='w'):
     """ set log file path to location based on whether setup file is used or not.  If not, use EXE.
         using loguru could put in downloads (next line)
         but I'm locating it once we know what section
@@ -55,19 +72,22 @@ def setup_loguru(log_level_std, log_level_log, log_path=None, log_mode='w'):
     from loguru import logger
     import os
     import sys
+    from bekutils import exe_path
 
     # LOG_LEVEL_LOG = "TRACE"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
     # LOG_LEVEL_STD = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
 
     if log_path is None:
-        # determine if application is running as a script file or frozen exe
-        if getattr(sys, 'frozen', False):
-            log_path = Path(sys.executable).parents[0]
-        elif __file__:
-            # root_path = os.path.dirname(__file__)
-            log_path = Path(__file__).parents[0]
-        else:
-            log_path = None
+        log_path = exe_path()
+
+        # # determine if application is running as a script file or frozen exe
+        # if getattr(sys, 'frozen', False):
+        #     log_path = Path(sys.executable).parents[0]
+        # elif __file__:
+        #     # root_path = os.path.dirname(__file__)
+        #     log_path = Path(__file__).parents[0]
+        # else:
+        #     log_path = None
     logger.debug(f"({log_path=}")
 
     logger.remove(0)
