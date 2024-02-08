@@ -174,6 +174,8 @@ def clean_field(fld, case_convert='lower'):
     'keep'.
     """
 
+    #TODO: pass characters to be removed as string
+
     from loguru import logger
 
     return_fld = str(fld).strip().replace(" ", "").replace("'", "").replace(".", "").replace("-", "")

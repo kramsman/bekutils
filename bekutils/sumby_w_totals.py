@@ -19,6 +19,7 @@ def sumby_w_totals(df_in, index_vars_w_sumflag, summed_fields, agg_type):
 
     import itertools
     import numpy as np
+    from loguru import logger
 
     logger.info("Just go into sumby_w_totals")
     # vlue to represent totalled lines; must have special char prefix to sort correctly
