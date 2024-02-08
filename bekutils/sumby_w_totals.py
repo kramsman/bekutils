@@ -19,6 +19,7 @@ def sumby_w_totals(df_in, index_vars_w_sumflag, summed_fields, agg_type):
 
     import itertools
     import numpy as np
+    import pandas as pd
     from loguru import logger
 
     logger.info("Just go into sumby_w_totals")
