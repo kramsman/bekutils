@@ -151,7 +151,8 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
     logger.debug(f"({log_path=}")
 
     logger.remove(0)
-    logfile = f"{exe_file().stem}.xlsx"
+    # logfile = f"{exe_file().stem}.xlsx"
+    logfile = exe_file().with_suffix(".log")
     try:
         os.remove(logfile)
     except Exception as e:
