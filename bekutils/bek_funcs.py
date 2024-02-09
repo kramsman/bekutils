@@ -61,9 +61,11 @@ def bek_write_excel(df, sheet_name, startrow, cell_infos = None,):
     import pandas as pd
     from openpyxl.styles import Font
     from bekutils import autosize_xls_cols
-    from bekutils import exe_path
+    from bekutils import exe_file
 
-    op_file = f"{Path(__file__).stem}.xlsx"
+    # op_file = f"{Path(__file__).stem}.xlsx"
+    op_file = exe_file().with_suffix(".xlsx")
+
     writer = pd.ExcelWriter(op_file)
 
     df.to_excel(writer, sheet_name = sheet_name, startrow = startrow)
