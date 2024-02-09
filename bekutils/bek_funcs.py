@@ -43,6 +43,51 @@ Taken from ROVCleaver
 log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
 
 
+def bek_excel_titles(wb, sheet_name_list, cell_infos = None, auto_size_before=None, auto_size_after=None):
+    """
+    Write titles to an Excel file.  Can autosize before or after titles are inserted (usually before because titles
+    are wide) to avoid ##### in cells.
+    Args:
+        sheet_name_list (): list of sheet names to add titles. 'True' will put titles on all.
+        cell_infos (): list of cell attributes used to format specified as dictionaries. Rows and cols 1 based
+        numerics. 'value's are replaced as text; font is passed as eval of cell value (note in function):
+            {'row':1,'col':1, 'cell_attr':"value", 'cell_value':'Summary Report'},
+            {'row':1,'col':1, 'cell_attr':"font", 'cell_value':'Font(b=True, size=20)'},
+    """
+
+    from openpyxl.styles import Font
+    from bekutils import autosize_xls_cols
+
+    if isinstance(sheet_name_list,str):
+        sheet_name_list = [sheet_name_list]
+    elif isinstance(sheet_name_list, list):
+        pass
+    else:
+        exit_yes(f"sheet_name_list is not str or list: {sheet_name_list=}", "Error", raise_err=True)
+
+    if auto_size_before:
+        for sh in wb.worksheets:
+            autosize_xls_cols(sh)
+
+    # TODO perform checks on formats of cell_infos
+    if cell_infos:
+        for sh in wb.worksheets:
+            if sh.title in sheet_name_list:
+                for cell_info in cell_infos:
+                    if cell_info['cell_attr'] == 'font':
+                        # use eval because needs to be like ft1 = Font(name='Arial', size=14).  might be able to use
+                        # another setattr but not ready to try now
+                        setattr(sh.cell(row=cell_info['row'], column=cell_info['col']), cell_info['cell_attr'],
+                                eval(cell_info['cell_value']))
+                    else:
+                        setattr(sh.cell(row=cell_info['row'], column=cell_info['col']), cell_info['cell_attr'],
+                                cell_info['cell_value'])
+
+    if auto_size_after:
+        for sh in wb.worksheets:
+            autosize_xls_cols(sh)
+
+
 def bek_write_excel(df, sheet_name, startrow, cell_infos = None,):
     """
     Write df to an excel file with the same name as the py file suffixed with xlsx in the current directory.
