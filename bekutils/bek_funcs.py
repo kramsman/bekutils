@@ -42,6 +42,48 @@ Taken from ROVCleaver
 
 log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
 
+
+def bek_write_excel(df, sheet_name, startrow, cell_infos = None,):
+    """
+    Write df to an excel file with the same name as the py file suffixed with xlsx in the current directory.
+    Autosizes before titles to avoid ##### in cells.
+    Args:
+        df (): dataframe being written out
+        sheet_name ():
+        startrow (): the row where the df rows will begin to be written
+        cell_infos (): list of cell attributes used to format specified as dictionaries. Rows and cols 1 based
+        numerics. 'value's are replaced as text; font is passed as eval of cell value (note in function):
+            {'row':1,'col':1, 'cell_attr':"value", 'cell_value':'Summary Report'},
+            {'row':1,'col':1, 'cell_attr':"font", 'cell_value':'Font(b=True, size=20)'},
+    """
+
+    from pathlib import Path
+    import pandas as pd
+    from bekutils import autosize_xls_cols
+
+    op_file = f"{Path(__file__).stem}.xlsx"
+    writer = pd.ExcelWriter(op_file)
+
+    df.to_excel(writer, sheet_name = sheet_name, startrow = startrow)
+    wb = writer.book
+    for sh in wb.worksheets:
+        autosize_xls_cols(sh)
+
+    if cell_infos:
+        for sh in wb.worksheets:
+            for cell_info in cell_infos:
+                if cell_info['cell_attr'] == 'font':
+                    # use eval because needs to be like ft1 = Font(name='Arial', size=14).  might be able to use
+                    # another setattr but not ready to try now
+                    setattr(sh.cell(row=cell_info['row'], column=cell_info['col']), cell_info['cell_attr'],
+                            eval(cell_info['cell_value']))
+                else:
+                    setattr(sh.cell(row=cell_info['row'], column=cell_info['col']), cell_info['cell_attr'],
+                            cell_info['cell_value'])
+
+    writer.close()
+
+
 def exe_path():
     """ return the path of location where exe is running """
 
