@@ -132,6 +132,7 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
     import os
     import sys
     from bekutils import exe_path
+    from bekutils import exe_file
 
     # LOG_LEVEL_LOG = "TRACE"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
     # LOG_LEVEL_STD = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
@@ -150,7 +151,7 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
     logger.debug(f"({log_path=}")
 
     logger.remove(0)
-    logfile = log_path / (Path(__file__).name + ".log")
+    logfile = f"{exe_file().stem}.xlsx"
     try:
         os.remove(logfile)
     except Exception as e:
