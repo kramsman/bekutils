@@ -61,6 +61,7 @@ def bek_write_excel(df, sheet_name, startrow, cell_infos = None,):
     import pandas as pd
     from openpyxl.styles import Font
     from bekutils import autosize_xls_cols
+    from bekutils import exe_path
 
     op_file = f"{Path(__file__).stem}.xlsx"
     writer = pd.ExcelWriter(op_file)
@@ -84,25 +85,36 @@ def bek_write_excel(df, sheet_name, startrow, cell_infos = None,):
 
     writer.close()
 
-
-def exe_path():
-    """ return the path of location where exe is running """
+def exe_file():
+    """ return the file of location where exe is running """
 
     import sys
     from pathlib import Path
 
     import __main__
-    import os
-
 
     # determine if application is running as a script file or frozen exe
     if getattr(sys, 'frozen', False):
-        exe_path = Path(sys.executable).parents[0]
+        exe_file = Path(sys.executable)
     elif __file__:
-        # exe_path = Path(__file__).parents[0]
-        exe_path = Path(__main__.__file__).parents[0]
+        # exe_file = Path(__file__).parents[0]
+        exe_file = Path(__main__.__file__)
     else:
-        exe_path = None
+        exe_file = None
+
+    return exe_file
+
+
+def exe_path():
+    """ return the path of location where exe is running """
+
+    from bekutils import exe_file
+    # from pathlib import Path
+    #
+    # import __main__
+    # import os
+
+    exe_path = exe_file().parents[0]
 
     return exe_path
 
@@ -542,7 +554,8 @@ def convert_bool(bool_val):
 
 if __name__ == '__main__':
 
-    yyy = exe_path()
+    fff = exe_file()
+    ppp = exe_path()
 
     print(f"{clean_field('a-1-t')}")
 

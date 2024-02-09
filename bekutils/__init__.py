@@ -18,6 +18,7 @@ from .bek_funcs import check_ws_headers
 from .bek_funcs import text_box
 from .bek_funcs import get_dir_name
 from .bek_funcs import convert_bool
+from .bek_funcs import exe_file
 from .bek_funcs import exe_path
 from .bek_funcs import text_box
 from .bek_funcs import bek_write_excel
