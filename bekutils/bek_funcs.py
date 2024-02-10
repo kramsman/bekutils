@@ -535,7 +535,7 @@ def get_dir_name(box_title, title2, initial_dir):
         [sg.Text(title2, font=("Arial", 18))],
         [
          sg.Input(key="-IN-", expand_x=True),
-         sg.FolderBrowse(initial_folder=os.path.expanduser(initial_dir))
+         sg.FolderBrowse(initial_folder=Path(initial_dir).expanduser())
          ],
         [sg.Button("Choose")],
     ]
@@ -557,7 +557,6 @@ def get_file_name(box_title, title2, initial_dir):
     :type title2: text next to input field
     """
 
-    import os
     import PySimpleGUI as sg
     from pathlib import Path
     from loguru import logger
@@ -568,7 +567,7 @@ def get_file_name(box_title, title2, initial_dir):
         [sg.Text(title2, font=("Arial", 18))],
         [
          sg.Input(key="-IN-", expand_x=True),
-         sg.FileBrowse(initial_folder=os.path.expanduser(initial_dir))
+         sg.FileBrowse(initial_folder=Path(initial_dir).expanduser())
          ],
         [sg.Button("Choose")],
     ]
