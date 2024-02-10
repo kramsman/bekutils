@@ -218,12 +218,12 @@ def exit_yes_no(msg, title=None, display_exiting=False):
     from loguru import logger
 
     if not title:
-        title = "Exit?"
+        title = "Continue?"
     choice = pymsgbox.confirm(msg, title, ['Yes', 'No'])
     if choice == "No":
         if display_exiting:
             pymsgbox.alert("Exiting", "Alert")
-        logger.debug("here'")
+        logger.debug("here")
         exit()
 
 
