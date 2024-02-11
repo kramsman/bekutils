@@ -23,4 +23,7 @@ from .bek_funcs import exe_path
 from .bek_funcs import text_box
 from .bek_funcs import bek_write_excel
 from .bek_funcs import bek_excel_titles
+from .bek_funcs import conc_addr
+from .bek_funcs import conc_addr_desc
+from .bek_funcs import conc_addr_remove_desc
 from .sumby_w_totals import sumby_w_totals
