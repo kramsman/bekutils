@@ -255,7 +255,7 @@ def is_number(s: str) -> bool:
     import numpy as np
     from loguru import logger
 
-    logger.info("in is_number")
+    logger.trace("in is_number")
 
     try:
         if np.isnan(s):  # this is needed- np.nan are int which are numbers
