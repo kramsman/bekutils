@@ -241,7 +241,11 @@ def exit_yes(msg: str, title: str = None, *, errmsg: str = None, raise_err: bool
     logger.debug("in 'exit_yes'")
     pymsgbox.alert(msg, title)
     if raise_err:
+        logger.debug("ready to raise error'")
         raise Exception(errmsg)
+    else:
+        logger.debug("ready to exit'")
+        exit()
 
 
 def is_number(s: str) -> bool:
@@ -597,6 +601,39 @@ def convert_bool(bool_val):
         else:
             return_val = False
     return return_val
+
+
+def conc_addr(concentration_dict, state: str = None, city: str = None, address: str = None) -> bool:
+    """ state/county/city/address are passed the cleaned using functon 'clean_field'; Uses removedict dictionary to return
+True for concentrated addresses (present in dictionary), False otherwise. """
+
+    from bekutils import clean_field
+
+    concentrated = (True if (clean_field(state), clean_field(city), clean_field(address)) in
+                             concentration_dict else False)
+    return concentrated
+
+
+def conc_addr_desc(concentration_dict: dict, state: str = None, city: str = None, address: str = None) -> str:
+    """ state/county/city/address are passed the cleaned using functon 'clean_field'; Uses removedict dictionary to return
+True for concentrated addresses (present in dictionary), False otherwise. """
+
+    from bekutils import clean_field
+
+    desc = concentration_dict.get((clean_field(state), clean_field(city),
+                                               clean_field(address)), {'desc': "", 'remove': ""})['desc']
+    return desc
+
+def conc_addr_remove_desc(concentration_dict: dict, state: str = None, city: str = None, address: str = None) -> str:
+    """ state/county/city/address are passed the cleaned using functon 'clean_field'; Uses removedict dictionary to return
+True for concentrated addresses (present in dictionary), False otherwise. """
+
+    from bekutils import clean_field
+
+    desc = concentration_dict.get((clean_field(state), clean_field(city),
+                                               clean_field(address)), {'desc': "", 'remove': ""})['remove']
+    return desc
+
 
 
 if __name__ == '__main__':
