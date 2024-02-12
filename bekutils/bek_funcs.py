@@ -206,7 +206,7 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
         pass
 
     logger.add(open(logfile, log_mode), level=log_level_log, backtrace=True, diagnose=True)
-    logger.add(sys.stdout, level=log_level_std, backtrace=True, diagnose=True)
+    logger.add(sys.stdout, level=log_level_std, backtrace=True, diagnose=False)
 
     return logger
 
