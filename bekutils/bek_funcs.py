@@ -166,7 +166,7 @@ def exe_path():
     return exe_path
 
 
-def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_mode='w'):
+def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_mode='w', log_file=True):
     """ set log file path to location based on whether setup file is used or not.  If not, use EXE.
         using loguru could put in downloads (next line)
         but I'm locating it once we know what section
@@ -197,16 +197,18 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
         #     log_path = None
     logger.debug(f"({log_path=}")
 
-    logger.remove(0)
-    logfile = exe_file().with_suffix(".log")
-    try:
-        os.remove(logfile)
-    except Exception as e:
-        logger.exception(e)
-        pass
-
-    logger.add(open(logfile, log_mode), level=log_level_log, backtrace=True, diagnose=True)
     logger.add(sys.stdout, level=log_level_std, backtrace=True, diagnose=False)
+
+    if log_file:
+        logger.remove(0)
+        logfile = exe_file().with_suffix(".log")
+        try:
+            os.remove(logfile)
+        except Exception as e:
+            logger.exception(e)
+            pass
+
+        logger.add(open(logfile, log_mode), level=log_level_log, backtrace=True, diagnose=True)
 
     return logger
 
@@ -564,6 +566,7 @@ def get_file_name(box_title, title2, initial_dir):
     import PySimpleGUI as sg
     from pathlib import Path
     from loguru import logger
+    from bekutils import exit_yes
 
     logger.debug('in get_file_name')
     # "Select Sincere address export file 'all-parent-campaign-requests-yyyy-mm-dd.csv'"
