@@ -184,7 +184,9 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
     # LOG_LEVEL_LOG = "TRACE"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
     # LOG_LEVEL_STD = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
 
+    logger.trace("entered setup_loguru")
     if log_path is None:
+        logger.trace("setting log_path if non w exe_path()")
         log_path = exe_path()
 
         # # determine if application is running as a script file or frozen exe
@@ -197,9 +199,12 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
         #     log_path = None
     logger.debug(f"({log_path=}")
 
+    logger.trace("setting sys.stdout")
     logger.add(sys.stdout, level=log_level_std, backtrace=True, diagnose=False)
 
     if log_file:
+        logger.trace("setting log_file info - logger.remove(0) next")
+
         logger.remove(0)
         logfile = exe_file().with_suffix(".log")
         try:
@@ -208,6 +213,7 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
             logger.exception(e)
             pass
 
+        logger.trace("setting log_file info - adding logfile")
         logger.add(open(logfile, log_mode), level=log_level_log, backtrace=True, diagnose=True)
 
     return logger
