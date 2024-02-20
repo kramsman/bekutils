@@ -387,13 +387,13 @@ def read_file_to_df(file_with_path, **param_dict):
     are skipped."""
 
     import inspect
-    from pathlib import PurePath
+    from pathlib import Path
     import pandas as pd
     from loguru import logger
 
     logger.info(f"reading file to dataframe '{file_with_path.stem}'")
 
-    if PurePath(file_with_path).suffix.lower() == '.xlsx':
+    if Path(file_with_path).suffix.lower() == '.xlsx':
         filtered_dict = {k: v for k, v in param_dict.items()
                          if k in [p.name for p in inspect.signature(pd.read_excel).parameters.values()]}
         df_temp = pd.read_excel(file_with_path, **filtered_dict)
