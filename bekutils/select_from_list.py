@@ -34,7 +34,7 @@ def select_from_list(lst, box_text='', select_type='check', pre_select=False):
         event, values = window.Read()
         if event is None:
             break
-        print(event, values)
+        # print(event, values)
         if event == "Read" or event == sg.WIN_CLOSED:
             break
 
