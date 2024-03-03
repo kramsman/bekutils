@@ -174,6 +174,9 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
         logfile = pathlib.Path.home() / "Downloads" / (Path(__file__).name + ".log")
     """
 
+    # TODO suppress error if log not found which happens on first run
+    # TODO do not create lof if log level is blank
+
     from pathlib import Path
     from loguru import logger
     import os
@@ -587,7 +590,7 @@ def get_file_name(box_title, title2, initial_dir):
 
     # event, values = sg.Window(heading_in_box, layout, size=(600, 100)).read(close=True)
     event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-                              size=(1000, 150), use_custom_titlebar=True).read(close=True)
+                              size=(1000, 200), use_custom_titlebar=True).read(close=True)
     # sg.Window.close()
 
     file_name = values['-IN-']
