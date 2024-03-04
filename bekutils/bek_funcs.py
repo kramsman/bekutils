@@ -472,7 +472,7 @@ def check_ws_headers(ws, vals):
 
 # TODO Add in check_fie+headers like above with csv
 
-def text_box(txt, title='', box_title="", buttons=None, window_size=None):
+def text_box(txt, title='', box_title="", buttons=None):
     """ Display text block with lines separated by \n and choice of buttons at bottom.
 
     Parameters
@@ -525,10 +525,8 @@ def text_box(txt, title='', box_title="", buttons=None, window_size=None):
         [sg.Button(text) for text in buttons],
     ]
 
-    if window_size is None:
-        window_size = f"(600, {rows * row_factor})"
     event, values = sg.Window(box_title, layout, titlebar_font=("Arial", 20), font=("Arial", 14),
-                              use_custom_titlebar=True, size=window_size, disable_close=True,
+                              use_custom_titlebar=True, size=(600, rows*row_factor), disable_close=True,
                               resizable=True, grab_anywhere=True).read(close=True)
     if event is not None:
         event = event.lower()
