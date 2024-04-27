@@ -1,11 +1,12 @@
 
 def select_from_list(lst, box_text='', select_type='check', pre_select=False):
-    """ select a list of values from a list using a radio button or check list
+    """ select a list of values from a list using a radio button or check list.
+    Clicking 'read' with no selections returns None.
 
     Args:
         lst (): list of text items to select from
-        box_text (): text showing at topof selection
-        select_type (): either check for checkbox which allows multi, or radio allows one
+        box_text (): title showing at top of selection
+        select_type (): either 'check' for checkbox which allows multi, or 'radio' allows one
         pre_select (): for checkbox whether boxes default to checked (true) or empty (false)
     """
 
@@ -40,25 +41,25 @@ def select_from_list(lst, box_text='', select_type='check', pre_select=False):
 
     window.close()
 
-    ixvalues = [key for key, val in values.items() if val]  # index of trues
-    ixlst = list(values.values())  # values of dict from window, true/falses
+    index_values = [key for key, val in values.items() if val]  # index of trues
+    index_list = list(values.values())  # values of dict from window, true/falses
 
-    if not ixvalues:
+    if not index_values:
         return_val = None
     elif select_type == 'radio':
-        return_val = lst[ixvalues[0]]  # take the first (and should be only) element of radio list
+        return_val = lst[index_values[0]]  # take the first (and should be only) element of radio list
     else:
-        return_val = [lst[i] for i in range(len(lst)) if ixlst[i]]  # list of selected elements
+        return_val = [lst[i] for i in range(len(lst)) if index_list[i]]  # list of selected elements
 
     return return_val
 
 
 if __name__ == '__main__':
 
-    ll = "item 1,item 2,item3,item4".split(',')
-    sel = select_from_list(ll, box_text='My BoxText', select_type='check', pre_select=False)
-    print(f"{sel=}")
-    sel = select_from_list(ll, box_text='My BoxText', select_type='check', pre_select=True)
-    print(f"{sel=}")
-    sel = select_from_list(ll, box_text='My BoxText', select_type='radio', pre_select=False)
-    print(f"{sel=}")
+    ll = ['item 1', 'item 2', 'item3', 'item4']
+    selected_item = select_from_list(ll, box_text='My BoxText', select_type='check', pre_select=False)
+    print(f"{selected_item=}")
+    selected_item = select_from_list(ll, box_text='My BoxText', select_type='check', pre_select=True)
+    print(f"{selected_item=}")
+    selected_item = select_from_list(ll, box_text='My BoxText', select_type='radio', pre_select=False)
+    print(f"{selected_item=}")

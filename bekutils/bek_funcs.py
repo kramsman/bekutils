@@ -1,5 +1,10 @@
 """ small functions that can be imported and used in other programs.
 Taken from ROVCleaver
+
+To add to an environment, in terminal:
+    conda activate ROVGeneral
+    pip install --force-reinstall git+https://github.com/kramsman/bekutils.git
+
 """
 
 # TODO rename bekutils
@@ -217,7 +222,7 @@ def setup_loguru(log_level_std='INFO', log_level_log='INFO', log_path=None, log_
             pass
 
         logger.trace("setting log_file info - adding logfile")
-        logger.add(open(logfile, log_mode), level=log_level_log, backtrace=True, diagnose=True)
+        logger.add(open(logfile, log_mode), level=log_level_log, backtrace=True, diagnose=False)
 
     return logger
 
