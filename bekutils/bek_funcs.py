@@ -60,6 +60,29 @@ def load_workbook_w_filepath(file, *args, **kwargs):
     return wb
 
 
+def wb_path(wb):
+    """ returns the filepath attribute set (usually by using load_workbook_w_filepath) or None.
+    can reference book name of worksheet using ws.parent.filepath.name.
+    """
+
+    # return (wb.filepath if hasattr(wb,'filepath') else None)
+    if hasattr(wb, 'filepath'):
+        return wb.filepath
+    else:
+        return None
+
+
+def wb_name(wb):
+    """ returns the name from the filepath attribute set (usually by using load_workbook_w_filepath) as string.
+    If attribute not available return 'Unknown'.
+    """
+
+    if hasattr(wb, 'filepath'):
+        return wb.filepath.name
+    else:
+        return 'Unknown'
+
+
 def bek_excel_titles(wb, sheet_name_list, cell_infos = None, auto_size_before=None, auto_size_after=None):
     """
     Write titles to an Excel file.  Can autosize before or after titles are inserted (usually before because titles
