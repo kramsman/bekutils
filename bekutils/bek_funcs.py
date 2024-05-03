@@ -48,6 +48,18 @@ To add to an environment, in terminal:
 log_level = "DEBUG"  # used for log file; screen set to INFO. TRACE, DEBUG, INFO, WARNING, ERROR
 
 
+def load_workbook_w_filepath(file, *args, **kwargs):
+    """ openpyxl load_workbook that adds a filepath attribute
+
+    Args:
+        file (): PosixPath path and filename of workbook
+    """
+    from openpyxl import load_workbook
+    wb = load_workbook(file, *args, **kwargs)
+    wb.filepath = file
+    return wb
+
+
 def bek_excel_titles(wb, sheet_name_list, cell_infos = None, auto_size_before=None, auto_size_after=None):
     """
     Write titles to an Excel file.  Can autosize before or after titles are inserted (usually before because titles
