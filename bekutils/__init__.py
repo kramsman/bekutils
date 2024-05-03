@@ -6,6 +6,8 @@ from .bek_funcs import clean_field
 from .bek_funcs import get_file_name
 from .bek_funcs import autosize_xls_cols
 from .bek_funcs import load_workbook_w_filepath
+from .bek_funcs import wb_path
+from .bek_funcs import wb_name
 from .bek_funcs import setup_loguru
 from .bek_funcs import exit_yes_no
 from .bek_funcs import clean_field
