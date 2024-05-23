@@ -55,7 +55,8 @@ def check_string_elements_for_errors(raw_string_elements, option_list):
     Element is used to denote variable or variable, option pair.
 
     Args:
-        variable_string (): list of either variable names or pairs of (variable_pair name, option)
+        raw_string_elements (): list of either variable names or pairs of (variable_pair name, option) like
+        [(‘car_count’, ‘mean’), ‘truck_count’, (‘people’, ‘count’)]
 
     >>> check_string_elements_for_errors(None, VALID_AGG_TYPES)  # multi vars ok
     Traceback (most recent call last):
@@ -282,22 +283,12 @@ def groupby_w_totals(df_in, raw_index_pairs, raw_agg_pairs):
     # vlue to represent totalled lines; must have special char prefix to sort correctly
     TOTAL_STR = '_TOTAL'
 
-    # index_vars_w_sumflag = [('Parent Campaign', True), 'Child Organization', ('Name', True)]
-    # index_vars_w_sumflag = [('Factory', False), ('Name', True)]
-    # index_vars_w_sumflag = [('Factory', False), 'Name']
-    # reformat original index field list replacing non-secified sum field with default of 'False'
-    # index_pairs = [list_obj if isinstance(list_obj, pair) else (list_obj, False)
-    #                          for list_obj in index_vars_w_sumflag]
-
     index_pairs = eval(raw_index_pairs)
     agg_pairs = eval(raw_agg_pairs)
 
     index_var_dict = {val[0]: val[1] for val in index_pairs}
     index_vars = list(index_var_dict.keys())
-    # index_vars_to_sum = [pair[0] for index, pair in enumerate(index_vars_w_sumflag_formatted) if pair[1]]
     index_vars_to_sum = [field for index, (field, sum_flag) in enumerate(index_pairs) if sum_flag]
-    # sum_cols = [index for index, pair in enumerate(index_vars_w_sumflag_formatted) if pair[1]]
-    # index_vars = ['Break_1', 'Factory', 'Name']
 
     # replace nan with " " to make sorting with _TOTAL correct
     df_in[index_vars] = df_in[index_vars]. fillna('')
@@ -309,9 +300,6 @@ def groupby_w_totals(df_in, raw_index_pairs, raw_agg_pairs):
     # create df summed by break of all fields in index_vars
     df_base = df_in.groupby(index_vars, dropna=False).agg(summed_fields_dict)
     a=1
-
-    # df_base = df_combine.groupby(index_vars).agg({'Total Addresses':sum, 'Available Addresses':sum,
-    #                                'Assigned to Organizations':sum, 'Assigned to Writers':sum})
 
     # summed_dfs is a list of df objects, each a summ on a different level
     summed_dfs = []
@@ -341,22 +329,47 @@ def groupby_w_totals(df_in, raw_index_pairs, raw_agg_pairs):
 
         if isinstance(index_obj, (list, tuple)):
             # This is general case, multiindex summary summed_dfs.
-            # The steps of forming the index are:
-            #   1. create index_array, a list of lists (number of rows wide) by (# vars high) with index being
-            #   column of variable, long filled with "_TOTAL" (var TOTAL_STR) like
+            # The variables are:
+            #   df.index.values is an numpy ndarray, len = # of df rows, each value a tuple representing
+            #   the index
+            #   value for the row comprised of the field values.  Eg if multiindex is animal, count, state, df.index.values
+            #   could be [('dog','1','NJ),('dog','2','CA'),('cat','1','NJ)]
+
+            #
+            # there's a neat trick to create individual list of index values from the tuples above:
+            #   list(zip(*df.index.values)) would take [('dog','1','NJ),('dog','2','CA'),('cat','1','CA)]
+            #   and produce [('dog','dog','cat'),('1','2','1'),('NJ','CA','CA')]
+            # https://stackoverflow.com/questions/12974474/how-to-unzip-a-list-of-pairs-into-individual-lists
+            #
+            #   index_array: produced with index_array = len(index_vars) * [len(df.index.values) * [TOTAL_STR]].
+            #   a list of lists with dimensions: # vars high by # of df rows wide filled with value of TOTAL_STR.
+            #   TODO what does this mean?
+            #   the list index will correspond to the column number for a variable, so we can replace the TOTAL_STR
+            #   values with the index values from the summed df.  like
             #       index 0 = [_TOTAL,_TOTAL,_TOTAL,_TOTAL,]
             #       index 1 = [_TOTAL,_TOTAL,_TOTAL,_TOTAL,]
+            #
+            # df.MultiIndex.from_arrays(index_array) is used to convert arrays to MultiIndex.  Opposite of list(zip(*df.index.values))
+            # for example:
+            #   arrays = [[1, 1, 2, 2], ['red', 'blue', 'red', 'blue']]
+            #   df.MultiIndex.from_arrays(arrays, names=('number', 'color'))
+            #   MultiIndex([(1,  'red'),
+            #             (1, 'blue'),
+            #             (2,  'red'),
+            #             (2, 'blue')],
+            #            names=['number', 'color'])
+
+            # The steps of forming the index are:
+            # todo finish steps
+
             #   2. split df.index.values into a list of lists (actually pairs) where each list is the values down
-            #   the rows. df.index.values is an array(list) of pairs, each pair the index for the row, pairs being
-            #   variable value combinations.  so df.index.values=[('a','1'),('b','1'),('c','2')] =>
-            #   separate_indexes becomes [('a','b','c'),('1','1','2')]
+            #   the rows.
+
             #   3. create a dictionary of filename to separate index
             #   4. replace the corresponding rows in the array with the index values
             #   5. create a multiindex for the df from the index array were row arrays become elements of index pairs
+
             index_array = len(index_vars) * [len(df.index.values) * [TOTAL_STR]]
-            # below is a neat trick: list(zip(*summed_dfs[2].index.values)) unzips and produces a list of lists (actually
-            # pairs), each the n position in all pairs of index.
-            # https://stackoverflow.com/questions/12974474/how-to-unzip-a-list-of-pairs-into-individual-lists
             separate_indexes = list(zip(*df.index.values))
 
             # pairs of col name and list of index values
@@ -369,8 +382,8 @@ def groupby_w_totals(df_in, raw_index_pairs, raw_agg_pairs):
             for column_field in df.index.names:
                 # below loops though to get index number in multiindex of field
                 # index_in_multiindex = [index_vars_w_sumflag[0] for index_vars_w_sumflag in index_vars_w_sumflag_formatted].index(column_field)
-                index_in_multiindex = index_vars.index(column_field)
-                index_array[index_in_multiindex] = field_to_separate_indexes_dict[column_field]
+                index_number_in_multiindex = index_vars.index(column_field)
+                index_array[index_number_in_multiindex] = field_to_separate_indexes_dict[column_field]
             df.index = pd.MultiIndex.from_arrays(index_array)
 
         # elif isinstance(index_obj, str):
@@ -442,7 +455,7 @@ if __name__ == '__main__':
     # import doctest
     # doctest.testmod(verbose=True)
 
-    INPUT_FILE = None
+    INPUT_FILE = "/Users/Denise/Downloads/all-parent-campaigns-requests-2024-05-01.csv"
 
     from bekutils import setup_loguru
     from bekutils import autosize_xls_cols
