@@ -20,32 +20,32 @@ VALID_AGG_TYPES = ['sum', 'count']
 #         super().__init__(msg, *args, **kwargs)
 
 
-def groupby_w_totals_check(df_in, index_vars_w_sumflag_in, agg_fields_in):
+def groupby_w_totals_check(df_in, raw_row_pairs_in, raw_aggregate_pairs_in):
     """
     Args:
         df_in (): dataframe to summarize.
-        index_vars_w_sumflag_in (): list of fields in df to be grouped-by, lowercase list.
-        agg_fields_in (): list of fields in df to be aggregated.  Specified as pairs of (field,agg).
+        raw_row_pairs_in (): list of fields in df to be grouped-by, lowercase list.
+        raw_aggregate_pairs_in (): list of fields in df to be aggregated.  Specified as pairs of (field,agg).
     """
 
     from loguru import logger
     from bekutils import setup_loguru
     from bekutils.bek_funcs import exit_yes
 
-    check_string_elements_for_errors(agg_fields_in, VALID_AGG_TYPES)
+    check_string_elements_for_errors(raw_aggregate_pairs_in, VALID_AGG_TYPES)
 
     # make sure all fields are in df_in
-    agg_vars = [var for var, sum_flag in eval(agg_fields_in)]
-    missing_fields = set(agg_vars) - set(df_in.columns)
-    if len(missing_fields) != 0:
-        exit_yes(f"Aggregate fields {missing_fields} are not in file to be summarized.", "MISSING FIELD", )
+    aggregate_fields = [var for var, sum_flag in eval(raw_aggregate_pairs_in)]
+    missing_aggregate_fields = set(aggregate_fields) - set(df_in.columns)
+    if len(missing_aggregate_fields) != 0:
+        exit_yes(f"Aggregate fields {missing_aggregate_fields} are not in file to be summarized.", "MISSING FIELD", )
 
-    check_string_elements_for_errors(index_vars_w_sumflag_in, [True, False])
+    check_string_elements_for_errors(raw_row_pairs_in, [True, False])
 
-    index_vars = [var for var, sum_flag in eval(index_vars_w_sumflag_in)]
-    missing_fields = set(index_vars) - set(df_in.columns)
-    if len(missing_fields) != 0:
-        exit_yes(f"Index fields {missing_fields} are not in file to be summarized.", "MISSING FIELD", )
+    row_fields = [var for var, sum_flag in eval(raw_row_pairs_in)]
+    missing_row_fields = set(row_fields) - set(df_in.columns)
+    if len(missing_row_fields) != 0:
+        exit_yes(f"Row fields {missing_row_fields} are not in file to be summarized.", "MISSING FIELD", )
 
 
 def check_string_elements_for_errors(raw_string_elements, option_list):
@@ -126,18 +126,18 @@ def check_string_elements_for_errors(raw_string_elements, option_list):
             raise Exception("Passed string is not a string or list")
 
 
-def fill_variable_pairs(string_elements, default_param):
+def fill_field_pairs(string_elements, default_param):
     """ fill the second argument in a field list with optional second parameter
 
     Args:
         string_elements (): [var1, [var2,parm1]]
         default_param (): value to fill 2nd element of non-paird elements
 
-    >>> fill_variable_pairs("'var1'", False)
+    >>> fill_field_pairs("'var1'", False)
     [['var1', False]]
-    >>> fill_variable_pairs("'var1',['var2', 'parm1']", False)
+    >>> fill_field_pairs("'var1',['var2', 'parm1']", False)
     [['var1', False], ['var2', 'parm1']]
-    >>> fill_variable_pairs("'var1',['var2', 'parm1']", 'sum')
+    >>> fill_field_pairs("'var1',['var2', 'parm1']", 'sum')
     [['var1', 'sum'], ['var2', 'parm1']]
     """
 
@@ -159,7 +159,7 @@ def fill_variable_pairs(string_elements, default_param):
     return pairs
 
 
-def groupby_w_totals_setup(input_file, df_in=None, raw_index_elements_in=None, raw_aggregate_elements_in=None,
+def groupby_w_totals_setup(input_file, df_in=None, raw_row_pairs_in=None, raw_aggregate_pairs_in=None,
                            default_agg_type='sum'):
     """
     Args:
@@ -168,10 +168,10 @@ def groupby_w_totals_setup(input_file, df_in=None, raw_index_elements_in=None, r
         input_file (): The text path to be used for df_in.  It is returned from the function in case it is selected
         so it can be used outside (ex in titles)
 
-        raw_index_elements_in (): list of fields in df to be grouped-by and whether to total by field (True/False).
+        raw_row_pairs_in (): list of fields in df to be grouped-by and whether to total by field (True/False).
         String separated by commas, converted to lowercase list. Default for total is False.
 
-        raw_aggregate_elements_in (): list of fields in df to be aggregated.  Simplest is string separated by commas, converted to
+        raw_aggregate_pairs_in (): list of fields in df to be aggregated.  Simplest is string separated by commas, converted to
         lowercase list. Can be list of pairs = (field, agg_type).
 
         default_agg_type (): from the list VALID_AGG_TYPES
@@ -235,40 +235,40 @@ def groupby_w_totals_setup(input_file, df_in=None, raw_index_elements_in=None, r
     if 'parent-campaign-address-counts' in str(input_file):
         df_in['remaining in room'] = df_in['assigned to organizations'] - df_in['assigned to writers']
 
-        if raw_index_elements_in is None:
-            raw_index_elements_in = "[('factory', True), ('name', True), ]"
+        if raw_row_pairs_in is None:
+            raw_row_pairs_in = "[('factory', True), ('name', True), ]"
 
-        if raw_aggregate_elements_in is None:
-            raw_aggregate_elements_in = "[('total addresses', 'sum'), ('available addresses', 'sum'),\
+        if raw_aggregate_pairs_in is None:
+            raw_aggregate_pairs_in = "[('total addresses', 'sum'), ('available addresses', 'sum'),\
                             ('assigned to organizations', 'sum'), ('assigned to writers', 'sum'),\
                             ('remaining in room', 'sum')\
                             ]"
 
     if 'all-parent-campaigns-requests' in str(input_file):
 
-        if raw_index_elements_in is None:
-            raw_index_elements_in = "[('factory_name', True), ('parent_campaign_name', True), " \
+        if raw_row_pairs_in is None:
+            raw_row_pairs_in = "[('factory_name', True), ('parent_campaign_name', True), " \
                                     "('org_name', True), ('writer_name', True), ('team_name', True)]"
 
-        if raw_aggregate_elements_in is None:
-            raw_aggregate_elements_in = "[('addresses_count', 'sum'),]"
+        if raw_aggregate_pairs_in is None:
+            raw_aggregate_pairs_in = "[('addresses_count', 'sum'),]"
 
     # can't check element list until defaults are set based on file name
-    check_string_elements_for_errors(raw_index_elements_in, [True, False])
-    check_string_elements_for_errors(raw_aggregate_elements_in, VALID_AGG_TYPES)
+    check_string_elements_for_errors(raw_row_pairs_in, [True, False])
+    check_string_elements_for_errors(raw_aggregate_pairs_in, VALID_AGG_TYPES)
 
     # convert list of 'elements' to proper 'pairs' substituting default 'option' if missing
-    index_elements_out = fill_variable_pairs(raw_index_elements_in, False)
-    aggregate_elements_out = fill_variable_pairs(raw_aggregate_elements_in, default_agg_type)
+    row_pairs_out = fill_field_pairs(raw_row_pairs_in, False)
+    aggregate_pairs_out = fill_field_pairs(raw_aggregate_pairs_in, default_agg_type)
 
     # replace var names with lowercase now that all are pairs
-    index_elements_out = [[var.lower(), option] for var, option in index_elements_out]
-    aggregate_elements_out = [[var.lower(), option] for var, option in aggregate_elements_out]
+    row_pairs_out = [[var.lower(), option] for var, option in row_pairs_out]
+    aggregate_pairs_out = [[var.lower(), option] for var, option in aggregate_pairs_out]
 
-    raw_index_elements_out = str(index_elements_out)
-    raw_aggregate_elements_out = str(aggregate_elements_out)
+    raw_row_pairs_out = str(row_pairs_out)
+    raw_aggregate_pairs_out = str(aggregate_pairs_out)
 
-    return input_file, df_in, raw_index_elements_out, raw_aggregate_elements_out
+    return input_file, df_in, raw_row_pairs_out, raw_aggregate_pairs_out
 
 
 def groupby_w_totals(df_in, raw_index_pairs, raw_agg_pairs):
