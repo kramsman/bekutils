@@ -13,7 +13,7 @@ groupby_w_totals_sincere is particular to work with Sincere files and will fill 
 # Order of variables is order/level of subtotaling
 
 
-VALID_AGG_TYPES = ['sum', 'count']
+VALID_AGG_TYPES = ['sum', 'count']  # TODO Replace with enum??
 
 # class CustomException(Exception):
 #     def __init__(self, msg='My default message', *args, **kwargs):

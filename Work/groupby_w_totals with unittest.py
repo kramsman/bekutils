@@ -631,7 +631,7 @@ def groupby_w_totals(df_in, index_vars_w_sumflag, summed_fields, agg_type):
     import unittest
     # unittest for exceptions https://stackoverflow.com/questions/129507/how-do-you-test-that-a-python-function-throws-an-exception
     # def test_afunction_throws_exception(self):
-    #     self.assertRaises(BaseException, check_vars_string_elements_for_errors, "999",)
+    #     self.assertRaises(BaseException, check_string_elements_for_errors, "999",)
     #
     #
     # test_afunction_throws_exception()
@@ -656,7 +656,7 @@ class ttest_check_vars_string_elements_for_errors(unittest.TestCase):
 
     # def test_bad_input_of_numeric(self):
     #     try:
-    #         check_vars_string_elements_for_errors("999",)
+    #         check_string_elements_for_errors("999",)
     #     except BaseException:
     #         print('baseexception ok')
     #         pass
@@ -683,11 +683,11 @@ if __name__ == '__main__':
 
     # MyTestCase()
 
-    # check_vars_string_elements_for_errors("'var1','var2', 'var3'")
-    # check_vars_string_elements_for_errors("'var1,'var2', 'var3'")  # missing one quote
-    # check_vars_string_elements_for_errors("('varx','sum'),'var2',")  # tuple
-    # check_vars_string_elements_for_errors("['varx','sum'],'var2',")
-    # check_vars_string_elements_for_errors("['varx','sum','var2',")  # missing ]
-    # check_vars_string_elements_for_errors("['varx','sum','dummy'],'var2',")  # third element
-    # check_vars_string_elements_for_errors("['varx','wrong'],'var2', 'var3', 'var4'")  # agg not in list
+    # check_string_elements_for_errors("'var1','var2', 'var3'")
+    # check_string_elements_for_errors("'var1,'var2', 'var3'")  # missing one quote
+    # check_string_elements_for_errors("('varx','sum'),'var2',")  # tuple
+    # check_string_elements_for_errors("['varx','sum'],'var2',")
+    # check_string_elements_for_errors("['varx','sum','var2',")  # missing ]
+    # check_string_elements_for_errors("['varx','sum','dummy'],'var2',")  # third element
+    # check_string_elements_for_errors("['varx','wrong'],'var2', 'var3', 'var4'")  # agg not in list
     check_vars_string_elements_for_errors("var1,(var2,sum, var3, var4")  # missing )
