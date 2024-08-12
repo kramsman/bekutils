@@ -117,8 +117,12 @@ def sumby_w_totals(df_in, index_vars_w_sumflag, summed_fields, agg_type):
         elif type(df.index.values[0]) == np.int64:  # grand total row
             # below fills an array to number of index_vars (len(index_vars)) repeating (*) a list filled with the
             # TOTAL_STR, like [['_TOTAL'], ['_TOTAL']], then uses the array as the multiindex
-            index_array = len(index_vars) * [[TOTAL_STR]]
-            df.index = pd.MultiIndex.from_arrays(index_array)
+            # Have to check for len == 1 (one variable in groupby) because this sets mutiindex to a tuple
+            if len(index_vars) == 1:
+                df.index = pd.Index([TOTAL_STR])
+            else:
+                index_array = len(index_vars) * [[TOTAL_STR]]
+                df.index = pd.MultiIndex.from_arrays(index_array)
         elif len(df.index.names) == 1:  # not a multiindex, just one variable used as index
             # index is only one variable, so need to build it up and add a column of "_TOTAL"
             # start with index_aray (# vars wide) by (# rows long) filled with "_TOTAL", then replace column with

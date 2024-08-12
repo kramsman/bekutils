@@ -4,11 +4,11 @@ import numpy as np
 
 # GOOD
 # from bekutils import bek_utils
-# bek_utils.main()
+# bek_utils.groupby_main()
 
 
 # GOOD
-# from bekutils.maincode import main as mn
+# from bekutils.maincode import groupby_main as mn
 # mn()
 from bekutils import setup_loguru
 

@@ -3,7 +3,7 @@ Started as sumby_w_totals.py, a script to group by specified fields and sum resu
 This version will allow functions other than sum (count, etc) and more importantly, will add three functions that can
 be called before:
 groupby_w_totals_setup will provide prompts where required
-groupby_w_totals_check will validate the fields before passing to the main function, groupby_w_totals
+groupby_w_totals_check will validate the fields before passing to the groupby_main function, groupby_w_totals
 groupby_w_totals_sincere is particular to work with Sincere files and will fill fields accordingly.
 """
 
@@ -13,7 +13,7 @@ groupby_w_totals_sincere is particular to work with Sincere files and will fill 
 # Order of variables is order/level of subtotaling
 
 
-VALID_AGG_TYPES = ['sum', 'count']  # TODO Replace with enum??
+VALID_AGG_TYPES = ['sum', 'count', 'mean']  # TODO Replace with enum??
 
 # class CustomException(Exception):
 #     def __init__(self, msg='My default message', *args, **kwargs):
@@ -48,111 +48,113 @@ def groupby_w_totals_check(df_in, raw_row_pairs_in, raw_aggregate_pairs_in):
         exit_yes(f"Row fields {missing_row_fields} are not in file to be summarized.", "MISSING FIELD", )
 
 
-def check_string_elements_for_errors(raw_string_elements, option_list):
-    """ check if var_string in proper format; raise exception if not.
-    Proper format is a list of either variable_pair names or pairs of (variable_pair name, agg_type) where 
-    agg_type must be in list.
-    Element is used to denote variable or variable, option pair.
+def parse_elements(raw_elements) :
+    """ parse list of fields separated by ',' or field/option pairs separated by ':'s into list of lists
+    >>> parse_elements(" x ")
+    [['x']]
+    >>> parse_elements(" x , y ")
+    [['x'], ['y']]
+    >>> parse_elements("  x , y : sum ")
+    [['x'], ['y', 'sum']]
 
     Args:
-        raw_string_elements (): list of either variable names or pairs of (variable_pair name, option) like
-        [(‘car_count’, ‘mean’), ‘truck_count’, (‘people’, ‘count’)]
-
-    >>> check_string_elements_for_errors(None, VALID_AGG_TYPES)  # multi vars ok
-    Traceback (most recent call last):
-    Exception: Field_vals can not be evaluated by python, is not a valid python object
-    >>> check_string_elements_for_errors("'var1','var2', 'var3'", VALID_AGG_TYPES)  # multi vars ok
-    >>> check_string_elements_for_errors("('varx','sum'),'var2',", VALID_AGG_TYPES)  # pair ok
-    >>> check_string_elements_for_errors("('varx', True),'var2',", [True, False])  # specified option_list ok
-    >>> check_string_elements_for_errors("['varx','sum'],'var2',", VALID_AGG_TYPES)  # list ok
-    >>> check_string_elements_for_errors("['varx','sum','dummy'],'var2',", VALID_AGG_TYPES)  # third ignored element ok
-    >>> check_string_elements_for_errors("['varx','sum'],'var2',", VALID_AGG_TYPES)  # list ok
-    >>> check_string_elements_for_errors("999", VALID_AGG_TYPES)  # not a variable
-    Traceback (most recent call last):
-    Exception: Passed string is not a valid format, may be missing quotes
-    >>> check_string_elements_for_errors("['varx','wrong'],'var2',", VALID_AGG_TYPES)  # agg_type not in list
-    Traceback (most recent call last):
-    Exception: Option not in accepted list
-    >>> check_string_elements_for_errors("var1,(var2,sum, var3, var4", VALID_AGG_TYPES)  # missing closing )
-    Traceback (most recent call last):
-    Exception: Field_vals can not be evaluated by python, is not a valid python object
-    >>> check_string_elements_for_errors("'var1,'var2', 'var3'", VALID_AGG_TYPES)  # missing var1 closing quote
-    Traceback (most recent call last):
-    Exception: Field_vals can not be evaluated by python, is not a valid python object
-    >>> check_string_elements_for_errors("['varx','sum','var2',", VALID_AGG_TYPES)  # missing close bracket ]
-    Traceback (most recent call last):
-    Exception: Field_vals can not be evaluated by python, is not a valid python object
+        raw_elements (): string of comma separated fields or 'fields:option' like "field1, field2:mean"
 
     """
+    elements = [element.strip() for element in raw_elements.split(',')]
+    items = [[item.strip() for item in element.split(':')] for element in elements]
+    return items
 
+
+def check_string_elements_for_errors(raw_string_elements, option_list):
+    """ check if var_string in proper format; raise exception if not.
+    Proper format is a list of elements separated by commas, each element either a valid dataframe field name or a
+    fielname followed by an option separated by a colon.
+    'option' must be in list.
+
+    Args:
+        raw_string_elements (): string of comma separated fields or 'fields:option' like "field1, field2:mean"
+
+    >>> check_string_elements_for_errors("var1*",VALID_AGG_TYPES)  # special char not allowed in field name (_-ok)
+    Traceback (most recent call last):
+    Exception: First item contains other than alphanumeric, underscore or dash
+    >>> check_string_elements_for_errors("var1 : sumx", VALID_AGG_TYPES)
+    Traceback (most recent call last):
+    Exception: Option not in accepted list
+    >>> check_string_elements_for_errors("var1, var2 ", VALID_AGG_TYPES)
+    [['var1'], ['var2']]
+    >>> check_string_elements_for_errors("var1 : sum, var2 ", VALID_AGG_TYPES)
+    [['var1', 'sum'], ['var2']]
+    >>> check_string_elements_for_errors("var1: True, var2", ['True', 'False'])  # booleans are read as str
+    [['var1', 'True'], ['var2']]
+    >>> check_string_elements_for_errors("var1: True, var2", [True, False])  # booleans are read as str
+    Traceback (most recent call last):
+    Exception: Option not in accepted list
+    >>> check_string_elements_for_errors(None, VALID_AGG_TYPES)  # TODO how should no fields-summary line only be treated
+    Traceback (most recent call last):
+    AttributeError: 'NoneType' object has no attribute 'split'
+    >>> check_string_elements_for_errors("999", VALID_AGG_TYPES)
+    [['999']]
+    >>> check_string_elements_for_errors("var1: bogus, var2", VALID_AGG_TYPES)  # option bogus not in list
+    Traceback (most recent call last):
+    Exception: Option not in accepted list
+
+    """
+    import re
     from loguru import logger
 
-    try:
-        evaled_string_elements = eval(raw_string_elements)
-    except Exception as e:
-        logger.exception(e)
-        logger.info(f"Field_vals '{raw_string_elements}' is not a valid format.  may be missing quotes.")
-        raise Exception("Field_vals can not be evaluated by python, is not a valid python object")
+    # Characters allowed in dataframe field names
+    valid_field_pattern = "^[A-Za-z0-9_-]*$"
 
-    # TODO optional/missing dicts caused problems in list comp so used loop.  way to use list comp?
-    # string must be list of variables and /or (variable,option) pairs
+    elements = parse_elements(raw_string_elements)
 
-    if isinstance(evaled_string_elements, str):  # make single variable a list
-        elements = [evaled_string_elements]
-    elif isinstance(evaled_string_elements, (tuple, list)):
-        elements = evaled_string_elements
-    else:
-        logger.info(f"Field_vals '{evaled_string_elements}' is not a valid format, it is type '{type(evaled_string_elements)}'.  may be missing "
-                    f"quotes.")
-        raise Exception("Passed string is not a valid format, may be missing quotes")
-
-    # check elements to make sure they are variables or pairs of variable, agg_type
+    # check elements to make sure they are list of variables or of variable, agg_type
     for element in elements:  #
         # should be string (variable) or pair of string/variable and agg_type
-        if isinstance(element, str):  # variable
-            pass
-        elif isinstance(element, (list, tuple)):  # (variable_pair,option) pair
-            if isinstance(element[0], str):  # variable
-                if element[1] in option_list:  # acceptable option
-                    pass
-                else:
-                    logger.info(f"Second item '{element[1]}' is not a valid option, '{option_list}'.")
-                    raise Exception('Option not in accepted list')
+        if len(element) > 2:
+            logger.info(f"'{element}' has more than two items.")
+            raise Exception("Element has more than two items.")
+        if len(element) > 0:
+            # if isinstance(element[0], str):  # variable  FIXME check for valid characters using regex
+            if bool(re.match(valid_field_pattern, element[0])):  # field contains only alphanumeric, underscore or dash
+                pass
             else:
-                logger.info(f"First item '{element[0]}' is not a variable/string.")
-                raise Exception("First item is not a variable/string")
-        else:
-            logger.info(f"String '{element}' is not a string or list. It is type '{type(element)}'.")
-            raise Exception("Passed string is not a string or list")
+                logger.info(f"First item '{element[0]}' contains other than alphanumeric, underscore or dash.")
+                raise Exception("First item contains other than alphanumeric, underscore or dash")
+        if len(element) > 1:
+            if element[1] in option_list:  # acceptable option
+                pass
+            else:
+                logger.info(f"Second item '{element[1]}' is not a valid option, '{option_list}'.")
+                raise Exception('Option not in accepted list')
+        if len(element) <= 0:
+            logger.info(f"Length of '{element}' 0 or less.")
+            raise Exception("Length of 'element' 0 or less.")
+    return elements
 
 
 def fill_field_pairs(string_elements, default_param):
     """ fill the second argument in a field list with optional second parameter
 
     Args:
-        string_elements (): [var1, [var2,parm1]]
-        default_param (): value to fill 2nd element of non-paird elements
+        string_elements (): string of comma separated fields or 'fields:option' like "field1, field2:mean"
+        default_param (): value to fill blank option item of non-paird elements
 
-    >>> fill_field_pairs("'var1'", False)
-    [['var1', False]]
-    >>> fill_field_pairs("'var1',['var2', 'parm1']", False)
-    [['var1', False], ['var2', 'parm1']]
-    >>> fill_field_pairs("'var1',['var2', 'parm1']", 'sum')
-    [['var1', 'sum'], ['var2', 'parm1']]
+    >>> fill_field_pairs("var1", 'mean')
+    [['var1', 'mean']]
+    >>> fill_field_pairs("var1, var2 : count", 'sum')
+    [['var1', 'sum'], ['var2', 'count']]
     """
 
-    # Force fields with no 'total' flag to pair with False
     pairs = []
-    evaled_string_elements = eval(string_elements)
-    if isinstance(evaled_string_elements, str):  # make single variable a list
-        elements = [evaled_string_elements]
-    else:
-        elements = evaled_string_elements
+    # evaled_string_elements = eval(string_elements)
+    # elements = check_string_elements_for_errors(string_elements, VALID_AGG_TYPES)
+    elements = parse_elements(string_elements)
 
     for element in elements:  # will be string (variable) or pair of string/variable and True/False
-        if isinstance(element, str):  # variable
-            pair = [element, default_param]
-        else:  # var/agg_type
+        if len(element) == 1:  # variable w no option
+            pair = [element[0], default_param]
+        else:  # var/option
             pair = element
         pairs.append(pair)
 
@@ -236,29 +238,38 @@ def groupby_w_totals_setup(input_file, df_in=None, raw_row_pairs_in=None, raw_ag
         df_in['remaining in room'] = df_in['assigned to organizations'] - df_in['assigned to writers']
 
         if raw_row_pairs_in is None:
-            raw_row_pairs_in = "[('factory', True), ('name', True), ]"
+            # raw_row_pairs_in = "[('factory', True), ('name', True), ]"
+            raw_row_pairs_in = "factory: t, name: t"
 
         if raw_aggregate_pairs_in is None:
-            raw_aggregate_pairs_in = "[('total addresses', 'sum'), ('available addresses', 'sum'),\
-                            ('assigned to organizations', 'sum'), ('assigned to writers', 'sum'),\
-                            ('remaining in room', 'sum')\
-                            ]"
+            # raw_aggregate_pairs_in = "[('total addresses', 'sum'), ('available addresses', 'sum'),\
+            #                 ('assigned to organizations', 'sum'), ('assigned to writers', 'sum'),\
+            #                 ('remaining in room', 'sum')\
+            #                 ]"
+            raw_aggregate_pairs_in = "total addresses: sum, available addresses: sum,\
+                            assigned to organizations: sum, assigned to writers: sum,\
+                            remaining in room: sum"
 
     if 'all-parent-campaigns-requests' in str(input_file):
 
         if raw_row_pairs_in is None:
-            raw_row_pairs_in = "[('factory_name', True), ('parent_campaign_name', True), " \
-                                    "('org_name', True), ('writer_name', True), ('team_name', True)]"
+            # raw_row_pairs_in = "[('factory_name', True), ('parent_campaign_name', True), " \
+            #                         "('org_name', True), ('writer_name', True), ('team_name', True)]"
+            raw_row_pairs_in = "factory_name: t, parent_campaign_name: t, " \
+                                    "org_name: t, writer_name: t, team_name: t"
 
         if raw_aggregate_pairs_in is None:
-            raw_aggregate_pairs_in = "[('addresses_count', 'sum'),]"
+            # raw_aggregate_pairs_in = "[('addresses_count', 'sum'),]"
+            raw_aggregate_pairs_in = "addresses_count: sum"
 
     # can't check element list until defaults are set based on file name
-    check_string_elements_for_errors(raw_row_pairs_in, [True, False])
+    # check_string_elements_for_errors(raw_row_pairs_in, [True, False])
+    check_string_elements_for_errors(raw_row_pairs_in, ['t', 'f'])
     check_string_elements_for_errors(raw_aggregate_pairs_in, VALID_AGG_TYPES)
 
     # convert list of 'elements' to proper 'pairs' substituting default 'option' if missing
-    row_pairs_out = fill_field_pairs(raw_row_pairs_in, False)
+    # row_pairs_out = fill_field_pairs(raw_row_pairs_in, False)
+    row_pairs_out = fill_field_pairs(raw_row_pairs_in, 'f')
     aggregate_pairs_out = fill_field_pairs(raw_aggregate_pairs_in, default_agg_type)
 
     # replace var names with lowercase now that all are pairs
@@ -288,7 +299,8 @@ def groupby_w_totals(df_in, raw_index_pairs, raw_agg_pairs):
 
     index_var_dict = {val[0]: val[1] for val in index_pairs}
     index_vars = list(index_var_dict.keys())
-    index_vars_to_sum = [field for index, (field, sum_flag) in enumerate(index_pairs) if sum_flag]
+    # index_vars_to_sum = [field for index, (field, sum_flag) in enumerate(index_pairs) if sum_flag]
+    index_vars_to_sum = [field for index, (field, sum_flag) in enumerate(index_pairs) if sum_flag.lower() == 't']
 
     # replace nan with " " to make sorting with _TOTAL correct
     df_in[index_vars] = df_in[index_vars]. fillna('')
@@ -448,6 +460,22 @@ def write_xls_report(df_pt, title1="", title2="", title3="", title4=""):
 
     writer.close()
 
+def main(input_file=None):
+    """ """
+
+    INPUT_FILE, df, index_vars, agg_vars = groupby_w_totals_setup(input_file)
+
+    # check info created above
+    groupby_w_totals_check(df, index_vars, agg_vars)
+
+    df_pt = groupby_w_totals(df, index_vars, agg_vars)
+
+    write_xls_report(df_pt, title1="Summary Report", title3=f"Source data: {INPUT_FILE.name}")
+
+    # sum_Group - return df?
+
+    # if __main__ then
+    #     write xls report
 
 
 if __name__ == '__main__':
@@ -469,6 +497,8 @@ if __name__ == '__main__':
 
     logger = setup_loguru('DEBUG', 'DEBUG')
     logger.info("testing")
+
+    main(INPUT_FILE)
 
     # will prompt for input file and set summary defaults for Sincere files
     # df, index_vars, agg_vars = groupby_w_totals_setup(

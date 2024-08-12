@@ -3,7 +3,7 @@ Started as sumby_w_totals.py, a script to group by specified fields and sum resu
 This version will allow functions other than sum (count, etc) and more importantly, will add three functions that can
 be called before:
 groupby_w_totals_setup will provide prompts where required
-groupby_w_totals_check will validate the fields before passing to the main function, groupby_w_totals
+groupby_w_totals_check will validate the fields before passing to the groupby_main function, groupby_w_totals
 groupby_w_totals_sincere is particular to work with Sincere files and will fill fields accordingly.
 """
 
@@ -678,7 +678,7 @@ if __name__ == '__main__':
     #         self.assertRaises(SomeCoolException, mymod.myfunc)
 
 
-    # unittest.main(exit=False, verbosity=2)
+    # unittest.groupby_main(exit=False, verbosity=2)
     unittest.main(exit=True, verbosity=2)
 
     # MyTestCase()
